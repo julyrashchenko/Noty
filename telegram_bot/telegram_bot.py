@@ -3,6 +3,8 @@ from enum import Enum
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, MessageHandler, filters
 
+from smart_notes.memory_storage import MemoryStorage
+
 
 class Command(Enum):
     START = 'start'
@@ -18,6 +20,7 @@ class TelegramBot:
         self.application = ApplicationBuilder().token(token).build()
         self.application.add_handler(CommandHandler(Command.START.value, self.command_handler))
         self.application.add_handler(MessageHandler(filters.TEXT, self.text_handler))
+        self._memory_storage = MemoryStorage()
 
     def run_polling(self):
         print('Bot started.')
@@ -25,6 +28,7 @@ class TelegramBot:
 
     async def text_handler(self, update: Update, context: CallbackContext):
         input_text = update.message.text
+        self._memory_storage.store(input_text)
         user_id = update.message.from_user.first_name
         answer = f'Got {input_text}, user {user_id}!'
         await update.message.reply_text(answer)
