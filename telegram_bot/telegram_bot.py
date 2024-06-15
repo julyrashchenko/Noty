@@ -1,8 +1,8 @@
 from enum import Enum
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import (ApplicationBuilder, CommandHandler, CallbackContext, MessageHandler, filters,
-                          CallbackQueryHandler)
+                          CallbackQueryHandler, Application)
 
 from smart_notes.memory_storage import MemoryStorage
 
@@ -16,9 +16,18 @@ class CommandHandlersFactory:
     pass
 
 
+async def set_commands(application: Application) -> None:
+    bot_commands = [
+        BotCommand(command='start', description='show all available options'),
+        BotCommand(command='help', description='how to use this bot')
+    ]
+    await application.bot.set_my_commands(bot_commands)
+    print('Commands are set.')
+
+
 class TelegramBot:
     def __init__(self, token: str):
-        self._application = ApplicationBuilder().token(token).build()
+        self._application = ApplicationBuilder().token(token).post_init(set_commands).build()
 
         # todo perhaps need to modify callback data (with descriptive strings)
         self._button_search = InlineKeyboardButton('Search', callback_data='1')
